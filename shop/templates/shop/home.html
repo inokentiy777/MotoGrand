@@ -1,0 +1,134 @@
+{% extends 'shop/base.html' %}
+{% block title %}
+    {% if current_category %}{{ current_category.name }} | MotoGrand{% else %}Головна | MotoGrand{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+    /* СІТКА ТОВАРІВ: 3 в ряд */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 30px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+    }
+
+    /* Адаптивність */
+    @media (max-width: 900px) { .products-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 600px) { .products-grid { grid-template-columns: 1fr; } }
+
+    /* КАРТКА ТОВАРУ */
+    .product-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+    .product-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        border-color: #e65100; /* Фірмовий мото-колір */
+    }
+
+    /* БЛОК ДЛЯ ФОТО */
+    .product-img-box {
+        height: 220px;
+        background: #f4f4f9;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 15px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* ЗАГЛУШКА МОТОЦИКЛА */
+    .no-img {
+        font-size: 80px;
+        opacity: 0.5;
+    }
+
+    /* БРЕНД (Додав з нашої БД) */
+    .product-brand {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        font-weight: 800;
+        margin-bottom: 5px;
+        letter-spacing: 1px;
+    }
+
+    /* ТЕКСТ ТА ЦІНА */
+    .product-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #121212;
+        text-decoration: none;
+        margin-bottom: 10px;
+        flex-grow: 1;
+        display: block;
+    }
+    .product-name:hover { color: #e65100; }
+
+    .product-price {
+        font-size: 22px;
+        font-weight: 900;
+        color: #d32f2f; /* Червоний колір ціни */
+        margin-bottom: 15px;
+    }
+
+    /* КНОПКА */
+    .btn-buy {
+        background: #e65100;
+        color: white;
+        border: none;
+        padding: 12px;
+        width: 100%;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-weight: bold;
+    }
+    .btn-buy:hover { background: #ff7b00; }
+</style>
+
+<h2 class="section-title">
+    {% if current_category %}
+        🏍️ {{ current_category.name }}
+    {% else %}
+        🔥 Всі мотозапчастини
+    {% endif %}
+</h2>
+
+<div class="products-grid">
+    {% for product in products %}
+        <div class="product-card">
+            
+            <a href="#" class="product-img-box">
+                <div class="no-img">🏍️</div>
+            </a>
+
+            <div class="product-brand">{{ product.brand.name }}</div>
+
+            <a href="#" class="product-name">
+                {{ product.name }}
+            </a>
+
+            <p class="product-price">{{ product.price|floatformat:2 }} грн</p>
+
+            <button type="button" class="btn-buy">🛒 В КОШИК</button>
+        </div>
+    {% empty %}
+        <p class="empty-msg" style="grid-column: span 3; text-align: center; font-size: 18px; color: #777;">
+            Товарів поки немає. Зайди в адмінку і додай кілька мотозапчастин! 🔧
+        </p>
+    {% endfor %}
+</div>
+{% endblock %}
