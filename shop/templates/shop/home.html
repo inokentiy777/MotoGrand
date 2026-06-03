@@ -54,7 +54,7 @@
         opacity: 0.5;
     }
 
-    /* БРЕНД (Додав з нашої БД) */
+    /* БРЕНД */
     .product-brand {
         font-size: 12px;
         color: #888;
@@ -79,7 +79,7 @@
     .product-price {
         font-size: 22px;
         font-weight: 900;
-        color: #d32f2f; /* Червоний колір ціни */
+        color: #d32f2f;
         margin-bottom: 15px;
     }
 
@@ -110,20 +110,24 @@
 <div class="products-grid">
     {% for product in products %}
         <div class="product-card">
-            
-            <a href="#" class="product-img-box">
-                <div class="no-img">🏍️</div>
+
+            <a href="{% url 'product_detail' product.id %}" class="product-img-box">
+                {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; max-height: 100%; object-fit: contain;">
+                {% else %}
+                    <div class="no-img">🏍️</div>
+                {% endif %}
             </a>
 
             <div class="product-brand">{{ product.brand.name }}</div>
 
-            <a href="#" class="product-name">
+            <a href="{% url 'product_detail' product.id %}" class="product-name">
                 {{ product.name }}
             </a>
 
             <p class="product-price">{{ product.price|floatformat:2 }} грн</p>
 
-            <button type="button" class="btn-buy">🛒 В КОШИК</button>
+            <button type="button" class="btn-buy" onclick="alert('Кошик в розробці!')">🛒 В КОШИК</button>
         </div>
     {% empty %}
         <p class="empty-msg" style="grid-column: span 3; text-align: center; font-size: 18px; color: #777;">
