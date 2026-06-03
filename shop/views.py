@@ -1,31 +1,35 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from .models import Product, Category
+
 
 def home(request):
-    # Контекст для головної сторінки
+    # Витягуємо ВСІ товари і ВСІ категорії з бази
+    products = Product.objects.all()
+    categories = Category.objects.all()
+
     context = {
         'page_title': 'Головна - MotoGrand',
-        'heading': 'Вітаємо в MotoGrand!',
-        'content': 'Тут ви знайдете найкращі мотозапчастини.',
-        'is_home': True  # Цей прапорець покаже список посилань
+        'products': products,
+        'categories': categories,
     }
-    return render(request, 'shop/page.html', context)
+    return render(request, 'shop/home.html', context)
+
+
+def category_view(request, category_id):
+    # Витягуємо товари тільки конкретної категорії
+    categories = Category.objects.all()  # Потрібно для меню
+    category = get_object_or_404(Category, id=category_id)
+    products = Product.objects.filter(category=category)
+
+    context = {
+        'page_title': f'Категорія: {category.name}',
+        'products': products,
+        'categories': categories,
+        'current_category': category,
+    }
+    return render(request, 'shop/home.html', context)
+
 
 def about(request):
-    # Контекст для сторінки "Про нас"
-    context = {
-        'page_title': 'Про нас',
-        'heading': 'Про компанію MotoGrand',
-        'content': 'Ми продаємо запчастини для мотоциклів з 2026 року.',
-        'is_home': False # Цей прапорець покаже кнопку "Назад"
-    }
-    return render(request, 'shop/page.html', context)
-
-def catalog(request):
-    # Контекст для сторінки каталогу
-    context = {
-        'page_title': 'Каталог',
-        'heading': 'Наші товари',
-        'content': 'Тут скоро будуть шоломи, шини та моторне масло.',
-        'is_home': False
-    }
-    return render(request, 'shop/page.html', context)
+    categories = Category.objects.all()
+    return render(request, 'shop/about.html', {'page_title': 'Про нас', 'categories': categories})
