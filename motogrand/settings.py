@@ -68,7 +68,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'motogrand.wsgi.application'
 
-
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'shop',  # <--- Додали наш додаток
+]
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 

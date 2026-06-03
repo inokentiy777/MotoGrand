@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ page_title }}</title>
+</head>
+<body>
+    <h1>{{ heading }}</h1>
+    <p>{{ content }}</p>
+
+    <hr>
+    <!-- Якщо це головна сторінка - показуємо посилання на інші -->
+    {% if is_home %}
+        <h3>Куди підемо далі?</h3>
+        <ul>
+            <li><a href="{% url 'about' %}">Про нас</a></li>
+            <li><a href="{% url 'catalog' %}">Каталог мотозапчастин</a></li>
+        </ul>
+    <!-- Якщо це БУДЬ-ЯКА інша сторінка - показуємо посилання на головну -->
+    {% else %}
+        <a href="{% url 'home' %}">⬅️ Повернутися на Головну сторінку</a>
+    {% endif %}
+</body>
+</html>
