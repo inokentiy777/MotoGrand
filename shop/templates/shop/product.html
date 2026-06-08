@@ -2,25 +2,154 @@
 {% block title %}{{ product.name }} | MotoGrand{% endblock %}
 
 {% block content %}
-<div style="background: white; padding: 30px; border-radius: 12px; display: flex; gap: 40px;">
-    <div style="flex: 1; text-align: center;">
+<style>
+    .product-page { display: flex; gap: 40px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 20px; }
+    .product-gallery { flex: 1; display: flex; justify-content: center; align-items: center; background: #f4f4f9; border-radius: 8px; padding: 20px; min-height: 400px; }
+    .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .btn-buy-large { background: #e65100; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; margin-top: 20px;}
+    .btn-buy-large:hover { background: #ff7b00; }
+    .reviews-section { background: white; padding: 30px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .form-input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
+    .rating-badge { background: #ffc107; color: #000; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 18px; }
+</style>
+
+<div class="product-page">
+    <div class="product-gallery">
         {% if product.image %}
-            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; border-radius: 8px;">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; max-height: 400px; object-fit: contain;">
         {% else %}
-            <div style="font-size: 100px;">🏍️</div>
+            <div style="font-size: 100px; opacity: 0.3;">🏍️</div>
         {% endif %}
     </div>
 
-    <div style="flex: 1;">
-        <h1>{{ product.name }}</h1>
-        <p><b>Бренд:</b> {{ product.brand.name }}</p>
-        <h2 style="color: #d32f2f; margin: 20px 0;">{{ product.price }} грн</h2>
-        <p>{{ product.description|default:"Опис відсутній" }}</p>
-        
-        <br>
-        <button disabled style="padding: 15px 30px; background: #ccc; border: none; cursor: not-allowed; font-weight: bold;">
-            🛒 КУПИТИ (Скоро...)
-        </button>
+    <div class="product-info">
+        <h1 style="margin-bottom: 10px;">{{ product.name }}</h1>
+        <p style="color: #888; font-weight: bold;">Бренд: {{ product.brand.name }} | Категорія: {{ product.category.name }}</p>
+
+        <!-- СЕРЕДНІЙ БАЛ (Вимога Лаби) -->
+        <div style="margin: 15px 0;">
+            <span class="rating-badge">⭐ {{ product.get_avg_rating }} / 5</span>
+            <span style="color: #888; font-size: 14px; margin-left: 10px;">(Відгуків: {{ product.reviews.count }})</span>
+        </div>
+
+        <h2 style="color: #d32f2f; font-size: 36px;">{{ product.price|floatformat:2 }} грн</h2>
+        <p style="margin-top: 20px; color: #555; line-height: 1.6;">{{ product.description|default:"Опис відсутній" }}</p>
+
+        <!-- ФОРМА КОШИКА (Вимога Лаби) -->
+        <form action="{% url 'add_to_cart' product.id %}" method="post" style="margin-top: auto;">
+            {% csrf_token %}
+            <label style="font-weight: bold;">Кількість:</label>
+            <input type="number" name="quantity" value="1" min="1" class="form-input" style="width: 80px; display: inline-block; margin-left: 10px;">
+            <button type="submit" class="btn-buy-large">🛒 Додати в кошик</button>
+        </form>
     </div>
+</div>
+
+<!-- БЛОК ВІДГУКІВ ТА ОЦІНКИ (Вимога Лаби) -->
+<div class="reviews-section">
+    <h2>Відгуки покупців</h2>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    {% for review in product.reviews.all %}
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <strong style="color: #e65100;">{{ review.user.username }}</strong>
+            <span style="color: #ffc107;">(Оцінка: {{ review.rating }}/5)</span>
+            <span style="color: #aaa; font-size: 12px; float: right;">{{ review.created_at|date:"d.m.Y" }}</span>
+            <p style="margin-top: 10px;">{{ review.text }}</p>
+        </div>
+    {% empty %}
+        <p style="color: #777;">Ще немає відгуків. Будьте першим!</p>
+    {% endfor %}
+
+    <h3 style="margin-top: 30px;">Залишити свій відгук:</h3>
+    {% if user.is_authenticated %}
+        <form method="post" style="max-width: 500px; margin-top: 15px;">
+            {% csrf_token %}
+            <label style="font-weight: bold;">Ваша оцінка (від 1 до 5):</label>
+            {{ review_form.rating }}
+            <label style="font-weight: bold;">Текст відгуку:</label>
+            {{ review_form.text }}
+            <button type="submit" name="review_submit" style="background: #121212; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Надіслати відгук</button>
+        </form>
+    {% else %}
+        <p style="color: #d32f2f; font-weight: bold; margin-top: 10px;">⚠️ Увійдіть в систему (або створіть акаунт), щоб залишити відгук.</p>
+    {% endif %}
+</div>
+{% endblock %}{% extends 'shop/base.html' %}
+{% block title %}{{ product.name }} | MotoGrand{% endblock %}
+
+{% block content %}
+<style>
+    .product-page { display: flex; gap: 40px; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-top: 20px; }
+    .product-gallery { flex: 1; display: flex; justify-content: center; align-items: center; background: #f4f4f9; border-radius: 8px; padding: 20px; min-height: 400px; }
+    .product-info { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+    .btn-buy-large { background: #e65100; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; width: 100%; text-transform: uppercase; margin-top: 20px;}
+    .btn-buy-large:hover { background: #ff7b00; }
+    .reviews-section { background: white; padding: 30px; border-radius: 12px; margin-top: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    .form-input { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 6px; }
+    .rating-badge { background: #ffc107; color: #000; padding: 5px 10px; border-radius: 20px; font-weight: bold; font-size: 18px; }
+</style>
+
+<div class="product-page">
+    <div class="product-gallery">
+        {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%; max-height: 400px; object-fit: contain;">
+        {% else %}
+            <div style="font-size: 100px; opacity: 0.3;">🏍️</div>
+        {% endif %}
+    </div>
+
+    <div class="product-info">
+        <h1 style="margin-bottom: 10px;">{{ product.name }}</h1>
+        <p style="color: #888; font-weight: bold;">Бренд: {{ product.brand.name }} | Категорія: {{ product.category.name }}</p>
+
+        <!-- СЕРЕДНІЙ БАЛ (Вимога Лаби) -->
+        <div style="margin: 15px 0;">
+            <span class="rating-badge">⭐ {{ product.get_avg_rating }} / 5</span>
+            <span style="color: #888; font-size: 14px; margin-left: 10px;">(Відгуків: {{ product.reviews.count }})</span>
+        </div>
+
+        <h2 style="color: #d32f2f; font-size: 36px;">{{ product.price|floatformat:2 }} грн</h2>
+        <p style="margin-top: 20px; color: #555; line-height: 1.6;">{{ product.description|default:"Опис відсутній" }}</p>
+
+        <!-- ФОРМА КОШИКА (Вимога Лаби) -->
+        <form action="{% url 'add_to_cart' product.id %}" method="post" style="margin-top: auto;">
+            {% csrf_token %}
+            <label style="font-weight: bold;">Кількість:</label>
+            <input type="number" name="quantity" value="1" min="1" class="form-input" style="width: 80px; display: inline-block; margin-left: 10px;">
+            <button type="submit" class="btn-buy-large">🛒 Додати в кошик</button>
+        </form>
+    </div>
+</div>
+
+<!-- БЛОК ВІДГУКІВ ТА ОЦІНКИ (Вимога Лаби) -->
+<div class="reviews-section">
+    <h2>Відгуки покупців</h2>
+    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+    {% for review in product.reviews.all %}
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <strong style="color: #e65100;">{{ review.user.username }}</strong>
+            <span style="color: #ffc107;">(Оцінка: {{ review.rating }}/5)</span>
+            <span style="color: #aaa; font-size: 12px; float: right;">{{ review.created_at|date:"d.m.Y" }}</span>
+            <p style="margin-top: 10px;">{{ review.text }}</p>
+        </div>
+    {% empty %}
+        <p style="color: #777;">Ще немає відгуків. Будьте першим!</p>
+    {% endfor %}
+
+    <h3 style="margin-top: 30px;">Залишити свій відгук:</h3>
+    {% if user.is_authenticated %}
+        <form method="post" style="max-width: 500px; margin-top: 15px;">
+            {% csrf_token %}
+            <label style="font-weight: bold;">Ваша оцінка (від 1 до 5):</label>
+            {{ review_form.rating }}
+            <label style="font-weight: bold;">Текст відгуку:</label>
+            {{ review_form.text }}
+            <button type="submit" name="review_submit" style="background: #121212; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Надіслати відгук</button>
+        </form>
+    {% else %}
+        <p style="color: #d32f2f; font-weight: bold; margin-top: 10px;">⚠️ Увійдіть в систему (або створіть акаунт), щоб залишити відгук.</p>
+    {% endif %}
 </div>
 {% endblock %}
